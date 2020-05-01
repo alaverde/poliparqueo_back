@@ -18,6 +18,10 @@ class Parqueadero {
         return $this->identificacion;
     }
 
+    function getCantidadPlazas(){
+        return $this->cantidadPlazas;
+    }
+
     function consultar(){
         $conexion = Conexion::connect(Config::getConfig());
         $sql = $conexion->prepare("SELECT * FROM parqueadero WHERE id=:id");

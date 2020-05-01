@@ -127,6 +127,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
             $respuesta = RegistroParqueadero::registrarSalida($registro);
             $respuesta->result = true;
             Respuesta::send($respuesta, 200);
+            break;
+             
+        case 'consultarPlazasLibres':
+            if( !(isset($_POST['parqueadero']))){
+                $respuesta->mensaje = "Todos los campos son obligatorios";
+                Respuesta::send($respuesta, 200);
+            }
+
+            $disponibles = RegistroParqueadero::consultarPlazasLibres($_POST['parqueadero']);
+            $respuesta->libres = $disponibles;
+            $respuesta->result = true;
+            Respuesta::send($respuesta, 200);
         
             break;
 

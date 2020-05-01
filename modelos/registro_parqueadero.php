@@ -97,6 +97,30 @@ class RegistroParqueadero {
 
     }
 
+    static function consultarPlazasLibres($idParqueadero){
+        $conexion = Conexion::connect(Config::getConfig());
+        $sql = $conexion->prepare("SELECT count(id) ingresos FROM registro WHERE tipo_registro=1 AND parqueadero=:parqueadero");
+        $sql->bindValue(':parqueadero',$idParqueadero);
+        $sql->execute();
+        $result = $sql->fetch(PDO::FETCH_ASSOC);
+        $ingreso = $result['ingresos'];
+
+        $conexion = Conexion::connect(Config::getConfig());
+        $sql = $conexion->prepare("SELECT count(id) salidas FROM registro WHERE tipo_registro=2 AND parqueadero=:parqueadero");
+        $sql->bindValue(':parqueadero',$idParqueadero);
+        $sql->execute();
+        $result = $sql->fetch(PDO::FETCH_ASSOC);
+        $salidas = $result['salidas'];
+
+        $totalOcupados = $ingreso - $salidas;
+        $parqueaderoLibre = new Parqueadero($idParqueadero);
+        $disponibles = $parqueaderoLibre->getCantidadPlazas()-$totalOcupados;
+
+        return $disponibles;
+         
+
+    }
+
     /*static function validarUsuario($correo, $contrasena){
         $conexion = Conexion::connect(Config::getConfig());
         $sql = $conexion->prepare("SELECT * FROM usuario WHERE correo=:correo AND clave_acceso=:contrasena");
