@@ -119,6 +119,7 @@ class Usuario {
             $respuesta->permisos = $result["permisos"];
             $respuesta->id = $result["id"];
             $respuesta->nombres = $result["nombres"];
+            $respuesta->parqueadero_asignado = $result["parqueadero_asignado"];
         }else{
             $respuesta->result = false;
         }

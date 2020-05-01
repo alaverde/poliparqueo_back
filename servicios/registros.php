@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
                 Respuesta::send($respuesta, 200);
             }
 
-            $parqueadero = new Parqueadero(1);
+            $parqueadero = new Parqueadero($_POST['parqueadero']);
 
             $registro = new RegistroParqueadero(0, $vehiculo, $usuario, $parqueadero);
 
@@ -119,15 +119,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
                 $respuesta->mensaje = "El usuario no se encuentra registrado en el sistema";
                 Respuesta::send($respuesta, 200);
             }
-
-            $parqueadero = new Parqueadero(1);
+           
+            $parqueadero = new Parqueadero($_POST['parqueadero']);
 
             $registro = new RegistroParqueadero(0, $vehiculo, $usuario, $parqueadero);
 
             $respuesta = RegistroParqueadero::registrarSalida($registro);
             $respuesta->result = true;
             Respuesta::send($respuesta, 200);
-            
+        
             break;
 
         default:
