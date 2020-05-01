@@ -2,6 +2,9 @@
 include "../persistencia/config.php";
 include "../persistencia/conexion.php";
 include "../modelos/usuario.php";
+include "../modelos/registro_parqueadero.php";
+include "../modelos/vehiculo.php";
+include "../modelos/parqueadero.php";
 include "respuesta.php";
 
 header('Content-Type: application/json');
@@ -12,7 +15,7 @@ $respuesta->result = false;
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET')
 {
-    if (!isset($_GET['metodo']))
+    /*if (!isset($_GET['metodo']))
     {
         $respuesta->mensaje = "Debe indicar un método";
         Respuesta::send($respuesta, 401);
@@ -38,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET')
             $respuesta->mensaje = "Operación no definida";
             Respuesta::send($respuesta, 400);
             break;
-    }
+    }*/
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
@@ -52,25 +55,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
     $metodo = $_POST['metodo'];
 
     switch ($metodo) {
-        case 'registrarUsuario':
-            if(!(isset($_POST['nombres']) &&
-                isset($_POST['apellidos'])&&
-                isset($_POST['identificacion'])&&
-                isset($_POST['correo'])&&
-                isset($_POST['contrasena']))){
+        case 'registrarIngreso':
+            if( !(isset($_POST['placa_vehiculo']) &&
+                isset($_POST['identificacion'])) ){
                 
                 $respuesta->mensaje = "Todos los campos son obligatorios";
-                Respuesta::send($respuesta, 400);
+                Respuesta::send($respuesta, 200);
             }
-            
-            $usuario = new Usuario(0);
-            $usuario->setNombres($_POST['nombres']);
-            $usuario->setApellidos($_POST['apellidos']);
-            $usuario->setIdentificacion($_POST['identificacion']);
-            $usuario->setCorreo($_POST['correo']);
-            $usuario->setContrasena($_POST['contrasena']);
 
-            $respuesta = Usuario::registrarUsuario($usuario);
+            $vehiculo = new Vehiculo($_POST['placa_vehiculo']);
+            if($vehiculo->getId() == 0){
+                if(!$vehiculo->guardar()){
+                    $respuesta->mensaje = "No se pudo agregar el vehiculo";
+                    Respuesta::send($respuesta, 200);
+                }
+            }
+
+            $usuario = Usuario::consultarUsuario($_POST['identificacion']);
+            if($usuario->getId() == 0){
+                $respuesta->mensaje = "El usuario no se encuentra registrado en el sistema";
+                Respuesta::send($respuesta, 200);
+            }
+
+            $parqueadero = new Parqueadero(1);
+
+            $registro = new RegistroParqueadero(0, $vehiculo, $usuario, $parqueadero);
+
+            $respuesta = RegistroParqueadero::registrarIngreso($registro);
+            $respuesta->result = true;
             Respuesta::send($respuesta, 200);
             break;
 
