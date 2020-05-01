@@ -59,6 +59,44 @@ class RegistroParqueadero {
         return $respuesta;
     }
 
+    static function registrarSalida($registro){
+        $conexion = Conexion::connect(Config::getConfig());
+        $sql = $conexion->prepare("INSERT INTO `registro`(`vehiculo`, `conductor`, `parqueadero`, `fecha`, `tipo_registro`) VALUES (:vehiculo,:conductor,:parqueadero,now(),:tipo_registro)");
+        $sql->bindValue(':vehiculo', $registro->getVehiculo()->getId());
+        $sql->bindValue(':conductor', $registro->getConductor()->getId());
+        $sql->bindValue(':parqueadero', $registro->getParqueadero()->getId());
+        $sql->bindValue(':tipo_registro', TipoRegistro::$salida);
+        $sql->execute();
+
+        $respuesta = new stdClass();
+        $respuesta->mensaje = "";
+        $respuesta->result = false;
+
+        if($sql->rowCount() > 0){
+            $respuesta->result = true;
+        }else{
+            $respuesta->result = false;
+        }
+
+        return $respuesta;
+
+
+    }
+    
+    static function validarTipoUltimoRegistro($vehiculo,$tipoRegistro){
+        $conexion = Conexion::connect(Config::getConfig());
+        $sql = $conexion->prepare("SELECT * FROM registro WHERE vehiculo=:vehiculo ORDER BY fecha DESC");
+        $sql->bindValue(':vehiculo', $vehiculo->getId());
+        $sql->execute();
+        $result = $sql->fetch(PDO::FETCH_ASSOC);
+        /* var_dump($result); imprime lo que tiene la variable $result*/
+        if($result["tipo_registro"] == $tipoRegistro){
+            return true;
+        }
+        return false;
+
+    }
+
     /*static function validarUsuario($correo, $contrasena){
         $conexion = Conexion::connect(Config::getConfig());
         $sql = $conexion->prepare("SELECT * FROM usuario WHERE correo=:correo AND clave_acceso=:contrasena");
