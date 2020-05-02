@@ -97,53 +97,78 @@ class RegistroParqueadero {
 
     }
 
-    static function consultarPlazasLibres($idParqueadero){
+    static function consultarPlazasLibres(){
         $conexion = Conexion::connect(Config::getConfig());
-        $sql = $conexion->prepare("SELECT count(id) ingresos FROM registro WHERE tipo_registro=1 AND parqueadero=:parqueadero");
-        $sql->bindValue(':parqueadero',$idParqueadero);
+        $sql = $conexion->prepare("SELECT *  FROM parqueadero");
         $sql->execute();
-        $result = $sql->fetch(PDO::FETCH_ASSOC);
-        $ingreso = $result['ingresos'];
+        $parqueaderos = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-        $conexion = Conexion::connect(Config::getConfig());
-        $sql = $conexion->prepare("SELECT count(id) salidas FROM registro WHERE tipo_registro=2 AND parqueadero=:parqueadero");
-        $sql->bindValue(':parqueadero',$idParqueadero);
-        $sql->execute();
-        $result = $sql->fetch(PDO::FETCH_ASSOC);
-        $salidas = $result['salidas'];
+        $plazasLibres = array();
+        foreach ($parqueaderos as $row => $parquadero) {
 
-        $totalOcupados = $ingreso - $salidas;
-        $parqueaderoLibre = new Parqueadero($idParqueadero);
-        $disponibles = $parqueaderoLibre->getCantidadPlazas()-$totalOcupados;
+            $infoParqueadero = new stdClass();
+            $infoParqueadero->parqueadero = $parquadero["id"];
+            $infoParqueadero->nombre = $parquadero["nombre"];
 
-        return $disponibles;
-         
+            $conexion = Conexion::connect(Config::getConfig());
+            $sql = $conexion->prepare("SELECT count(id) ingresos FROM registro WHERE tipo_registro=1 AND parqueadero=:parqueadero");
+            $sql->bindValue(':parqueadero',$infoParqueadero->parqueadero);
+            $sql->execute();
+            $result = $sql->fetch(PDO::FETCH_ASSOC);
+            $ingreso = $result['ingresos'];
 
-    }
+            $conexion = Conexion::connect(Config::getConfig());
+            $sql = $conexion->prepare("SELECT count(id) salidas FROM registro WHERE tipo_registro=2 AND parqueadero=:parqueadero");
+            $sql->bindValue(':parqueadero',$infoParqueadero->parqueadero);
+            $sql->execute();
+            $result = $sql->fetch(PDO::FETCH_ASSOC);
+            $salidas = $result['salidas'];
 
-    /*static function validarUsuario($correo, $contrasena){
-        $conexion = Conexion::connect(Config::getConfig());
-        $sql = $conexion->prepare("SELECT * FROM usuario WHERE correo=:correo AND clave_acceso=:contrasena");
-        $sql->bindValue(':correo', $correo);
-        $sql->bindValue(':contrasena', $contrasena);
-        $sql->execute();
-        $result = $sql->fetch(PDO::FETCH_ASSOC);
+            $totalOcupados = $ingreso - $salidas;
+            $parqueaderoLibre = new Parqueadero($infoParqueadero->parqueadero);
+            $disponibles = $parqueaderoLibre->getCantidadPlazas() - $totalOcupados;
 
-        $respuesta = new stdClass();
-        $respuesta->mensaje = "";
-        $respuesta->result = false;
+            $infoParqueadero->plazas_libres = $disponibles;
 
-        if($result !== false){
-            $respuesta->result = true;
-            $respuesta->permisos = $result["permisos"];
-            $respuesta->id = $result["id"];
-            $respuesta->nombres = $result["nombres"];
-        }else{
-            $respuesta->result = false;
+            array_push($plazasLibres, $infoParqueadero);
         }
 
-        return $respuesta;
-    }*/
+        return $plazasLibres;
+    }
+
+    static function consultarHistorial($usuario){
+        
+        $where = "";
+
+        if($usuario != 0){
+            $where = "WHERE registro.conductor = $usuario";
+        }
+
+        $script = "SELECT 
+                        ".$usuario." id,
+                        registro.fecha,
+                        usuario.identificacion,
+                        usuario.nombres,
+                        parqueadero.nombre parqueadero,
+                        vehiculo.placa,
+                        CASE 
+                            WHEN registro.tipo_registro = 1 THEN 'INGRESO'
+                            ELSE 'SALIDA'
+                        END accion
+                        FROM registro
+                            LEFT JOIN usuario ON usuario.id = registro.conductor
+                            LEFT JOIN parqueadero ON parqueadero.id = registro.parqueadero
+                            LEFT JOIN vehiculo ON vehiculo.id = registro.vehiculo 
+                        ". $where ."
+                        ORDER BY fecha DESC";
+
+        $conexion = Conexion::connect(Config::getConfig());
+        $sql = $conexion->prepare($script);
+        $sql->execute();
+        $historial = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+        return $historial;
+    }
 }
 
 ?>

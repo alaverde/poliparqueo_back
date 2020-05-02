@@ -130,13 +130,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
             break;
              
         case 'consultarPlazasLibres':
-            if( !(isset($_POST['parqueadero']))){
-                $respuesta->mensaje = "Todos los campos son obligatorios";
+            $disponibles = RegistroParqueadero::consultarPlazasLibres();
+            $respuesta->libres = $disponibles;
+            $respuesta->result = true;
+            Respuesta::send($respuesta, 200);
+        
+            break;
+
+        case 'consultarHistorial':
+            if( !(isset($_POST['usuario']))){
+                $respuesta->mensaje = "Se debe indicar los permisos  del usuario";
                 Respuesta::send($respuesta, 200);
             }
 
-            $disponibles = RegistroParqueadero::consultarPlazasLibres($_POST['parqueadero']);
-            $respuesta->libres = $disponibles;
+            $historial = RegistroParqueadero::consultarHistorial($_POST['usuario']);
+            $respuesta->historial = $historial;
             $respuesta->result = true;
             Respuesta::send($respuesta, 200);
         
