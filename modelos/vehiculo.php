@@ -29,18 +29,30 @@ class Vehiculo {
         }else{
             $this->id = 0;
         }
+        return $this->id;
     }
 
     function guardar(){
+        if($this->getPlaca() == ""){
+            return false; 
+        }
+
+        $idExistente = $this->consultarId();   
+        if($idExistente != 0){
+            return true; 
+        }
+
         $conexion = Conexion::connect(Config::getConfig());
         $sql = $conexion->prepare("INSERT INTO `vehiculo`(`placa`) VALUES (:placa)");
         $sql->bindValue(':placa', $this->getPlaca());
         $sql->execute();
 
+
         if($sql->rowCount() > 0){
             $this->id = $conexion->lastInsertId();
             return true;
         }
+      
 
         return false;
     }
