@@ -33,9 +33,12 @@ class Parqueadero {
             $this->nombre = $result["nombre"];
             $this->cantidadPlazas = $result["cantidad_plazas"];
         }else{
+            $this->id = 0;
             $this->nombre = "";
             $this->cantidadPlazas = 0;
+
         }
+        return $this->getId();
     }
 }
 
