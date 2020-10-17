@@ -1,11 +1,11 @@
 <?php
 require "./persistencia/config.php";
 require "./persistencia/conexion.php";
-require './modelos/vehiculo.php';
+require './modelos/usuario.php';
 
-class VehiculoTest extends \PHPUnit\Framework\TestCase{
+class UsuarioTest extends \PHPUnit\Framework\TestCase{
     
-    /** @test */ //Andres
+    /** @test */ //Juan Pablo
     public function registrar_un_usuario_error(){
         $usuario = new Usuario("");
 
@@ -16,7 +16,24 @@ class VehiculoTest extends \PHPUnit\Framework\TestCase{
     public function registrar_un_usuario(){
         $usuario = new Usuario("Juan","Laverde","1017273529","juan_laverde82162@elpoli.edu.co","1234","1234");
 
-        $this->assertTrue($vehiculo->registrarUsuario());
+        $this->assertTrue($usuario->registrarUsuario());
+    }
+
+
+     /** @test */ //Milton
+     public function validar_usuario_fallido(){
+        $usuario = new Usuario("");
+        $usuario->validarUsuario();
+
+        $this->assertEquals($usuario->validarUsuario());
+    }
+    
+    /** @test */
+    public function validar_usuario(){
+        $usuario = new Usuario("juan_laverde82162@elpoli.edu.co","1234");
+        $usuario->validarUsuario();
+
+        $this->assertEquals($usuario->validarUsuario());
     }
 }
 
